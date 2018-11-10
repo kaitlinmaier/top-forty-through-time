@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import queryString from 'query-string';
 
 const days = [];
 for (let i = 1; i <= 31; i++) {
@@ -22,9 +23,11 @@ class App extends React.Component {
       month: '11',
       day: '30',
       year: '1992',
+      accessToken: '',
     };
     this.handleClick = this.handleClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    // this.handleLogin = this.handleLogin.bind(this);
   }
 
   handleClick = () => {
@@ -41,44 +44,65 @@ class App extends React.Component {
     });
   };
 
+  componentDidMount = () => {
+    // window.location = 'http://localhost:1337/login';
+    // axios.get('/login');
+    let parsed = queryString.parse(window.location.search);
+    let accessToken = parsed.access_token;
+    console.log(accessToken);
+    this.setState({
+      accessToken,
+    });
+  };
+
   render() {
     return (
-      <div>
+      <div id="app">
         <h1>Top 40 Through Time</h1>
-        <label>Month</label>
-        <select name="month" onChange={this.handleChange}>
-          <option value="01">January</option>
-          <option value="02">February</option>
-          <option value="03">March</option>
-          <option value="04">April</option>
-          <option value="05">May</option>
-          <option value="06">June</option>
-          <option value="07">July</option>
-          <option value="08">August</option>
-          <option value="09">September</option>
-          <option value="10">October</option>
-          <option value="11">November</option>
-          <option value="12">December</option>
-        </select>
-        <label>Day</label>
-        <select name="day" onChange={this.handleChange}>
-          {days.map(day => (
-            <option key={day} value={day}>
-              {day}
-            </option>
-          ))}
-        </select>
-        <label>Year</label>
-        <select name="year" onChange={this.handleChange}>
-          {years.map(year => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <button type="submit" onClick={this.handleClick}>
-          Click
-        </button>
+        {this.state.accessToken ? (
+          <div>
+            <label>Month</label>
+            <select name="month" onChange={this.handleChange}>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <label>Day</label>
+            <select name="day" onChange={this.handleChange}>
+              {days.map(day => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+            <label>Year</label>
+            <select name="year" onChange={this.handleChange}>
+              {years.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <button type="submit" onClick={this.handleClick}>
+              Make Playlist
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => (window.location = 'http://localhost:1337/login')}
+          >
+            Sign In
+          </button>
+        )}
       </div>
     );
   }

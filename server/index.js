@@ -1,11 +1,69 @@
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const passport = require('passport');
 const app = express();
 const PORT = 1337;
+const request = require('request'); // "Request" library
+let querystring = require('querystring');
+process.env.SPOTIFY_CLIENT_ID = '9873bd8ace5b46d680506db5a4a58e1c';
+process.env.SPOTIFY_CLIENT_SECRET = 'd9183ca7cc9640c7bc58b18fbf51d4ce';
+let token = '';
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+let redirect_uri = process.env.REDIRECT_URI || 'http://localhost:1337/callback';
+
+app.get('/login', function(req, res) {
+  res.redirect(
+    'https://accounts.spotify.com/authorize?' +
+      querystring.stringify({
+        response_type: 'code',
+        client_id: process.env.SPOTIFY_CLIENT_ID,
+        scope:
+          'playlist-modify-private user-read-private user-read-email user-read-birthdate',
+        redirect_uri,
+      })
+  );
+});
+
+app.get('/callback', function(req, res) {
+  let code = req.query.code || null;
+  let authOptions = {
+    url: 'https://accounts.spotify.com/api/token',
+    form: {
+      code: code,
+      redirect_uri,
+      grant_type: 'authorization_code',
+    },
+    headers: {
+      Authorization:
+        'Basic ' +
+        new Buffer(
+          process.env.SPOTIFY_CLIENT_ID +
+            ':' +
+            process.env.SPOTIFY_CLIENT_SECRET
+        ).toString('base64'),
+    },
+    json: true,
+  };
+  request.post(authOptions, function(error, response, body) {
+    try {
+      let access_token = body.access_token;
+      let refresh_token = body.refresh_token;
+      console.log(body);
+      console.log('refresh', refresh_token);
+      token = access_token;
+      console.log('token', token);
+      let uri = process.env.FRONTEND_URI || 'http://localhost:1337';
+      res.redirect(uri + '?access_token=' + access_token);
+    } catch (error) {
+      next(error);
+    }
+    // res.redirect(uri);
+  });
+});
 
 app.get('/api/scrape/:date', (req, res, next) => {
   console.log('scrape');
@@ -14,8 +72,9 @@ app.get('/api/scrape/:date', (req, res, next) => {
   scrape(date);
 });
 
-app.get('/*', (req, res, next) => {
+app.get('/', (req, res, next) => {
   console.log('hello');
+  res.redirect('/login');
   // res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
@@ -32,8 +91,8 @@ const axios = require('axios');
 // const url = `https://www.billboard.com/charts/hot-100/${date}`;
 let songArr = [];
 let artistArr = [];
-const token =
-  'BQBBeRwRPokL48EPVrENUTHWXj6sgz5-7z_BHwEBIwlGtQn9Gc7eyzrwmNDL4IiT5lnLpHecOgvPnYzEmiF4dLiJraJlTU2Y1-lruerNPHQ6pqyiE7XIMxvoSPCk5iT3yhjJUmsesALNF39emXNxor6VlCJMUVox_JEIQbNVaodovLeyN3_PSm2RFxI4lODdNxmnyi6EcWQKsg';
+// const token =
+//   'BQDpsU7T9IRv53w2a5oh2z2f_fXIYGsFHxMZ2N8C9ARHOJgskLqXEGnwo-T-0uoH9Pqk-caXnFm0dlAHUKM-Yz--IdgcHPAeI90L_OpRHqCDLtEgHQ-cyz66B_gsyIDoSgp_eIO1LGaKGGBs7L-rmlCTCdJnQo7EGXeg4nEHkDrqwVUJotunpzJcikBf6KI8Ua4eMrdVvj3Clg';
 let playlistId = '';
 
 const scrape = async date => {
@@ -77,13 +136,35 @@ const scrape = async date => {
       artistArr.push(item);
     });
     console.log('inside', artistArr);
-    await postPlaylist(date);
+    // await postPlaylist(date);
+    await getId(date);
   } catch (err) {
     console.error(err);
   }
 };
 
-const postPlaylist = async date => {
+const getId = async date => {
+  try {
+    const res = await axios({
+      url: 'https://api.spotify.com/v1/me',
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+      success: function(response) {
+        // console.log(response);
+      },
+    });
+    const id = res.data.id;
+    console.log(id);
+    await postPlaylist(date, id);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const postPlaylist = async (date, id) => {
   try {
     let jsonData = {
       name: `On this date: ${date}`,
@@ -91,7 +172,7 @@ const postPlaylist = async date => {
       description: `On this date: ${date}`,
     };
     const res = await axios({
-      url: `https://api.spotify.com/v1/users/kaitlinmaier/playlists`,
+      url: `https://api.spotify.com/v1/users/${id}/playlists`,
       method: 'POST',
       data: jsonData,
       dataType: 'json',
