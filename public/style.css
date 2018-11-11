@@ -15,6 +15,18 @@ body {
   align-items: center;
 }
 
+.date {
+  display: flex;
+  padding: 15px;
+  justify-content: center;
+}
+
+.button {
+  display: flex;
+  padding: 15px;
+  align-content: center;
+}
+
 #main {
   height: 100%;
   display: flex;
@@ -45,7 +57,5 @@ body {
 }
 
 img {
-  height: 230px;
   width: 230px;
-  border-radius: 5px;
 }

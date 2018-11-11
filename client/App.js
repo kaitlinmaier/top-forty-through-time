@@ -59,42 +59,52 @@ class App extends React.Component {
     return (
       <div id="app">
         <h1>Top 40 Through Time</h1>
+        <img src={`/Spotify_Logo_RGB_Green.png`} />
         {this.state.accessToken ? (
           <div>
-            <label>Month</label>
-            <select name="month" onChange={this.handleChange}>
-              <option value="01">January</option>
-              <option value="02">February</option>
-              <option value="03">March</option>
-              <option value="04">April</option>
-              <option value="05">May</option>
-              <option value="06">June</option>
-              <option value="07">July</option>
-              <option value="08">August</option>
-              <option value="09">September</option>
-              <option value="10">October</option>
-              <option value="11">November</option>
-              <option value="12">December</option>
-            </select>
-            <label>Day</label>
-            <select name="day" onChange={this.handleChange}>
-              {days.map(day => (
-                <option key={day} value={day}>
-                  {day}
-                </option>
-              ))}
-            </select>
-            <label>Year</label>
-            <select name="year" onChange={this.handleChange}>
-              {years.map(year => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <button type="submit" onClick={this.handleClick}>
-              Make Playlist
-            </button>
+            <div>
+              <h3>
+                Choose a date to create a playlist from Billboard's Hot 100
+              </h3>
+            </div>
+            <div className="date">
+              <label>Month</label>
+              <select name="month" onChange={this.handleChange}>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              <label>Day</label>
+              <select name="day" onChange={this.handleChange}>
+                {days.map(day => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+              <label>Year</label>
+              <select name="year" onChange={this.handleChange}>
+                {years.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="button">
+              <button type="submit" onClick={this.handleClick}>
+                Make Playlist
+              </button>
+            </div>
           </div>
         ) : (
           <button
