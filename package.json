@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run start-server & npm run build-watch",
     "build-watch": "webpack -w",
-    "start-server": "nodemon server -e html,js,scss --ignore public --ignore client",
+    "start-server": "node server -e html,js,scss --ignore public --ignore client",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
